@@ -26,9 +26,14 @@ Generated with kicad-cli 10.0.8 from `smart_sensor_battery.kicad_pcb`. DRC: 0 vi
   "multiple lines matched to the same part" warning.
 - Economic PCBA is greyed out when the surface finish is OSP (the quote page
   default in Nov 2026). Pick HASL or LeadFree HASL first.
-- Quote on 2026-11-16: 5 boards, black, LeadFree HASL, Economic PCBA top side,
-  Confirm Parts Placement on = $70.84 before shipping (after moving R7 to
-  Basic part C25741; Extended-part fees are $3.09 each, 9 parts = $27.81).
+- Order in cart 2026-11-16: 5 bare boards (black, LeadFree HASL) + 2 assembled
+  (Economic, top side, D1 not placed, Confirm Parts Placement on) = $55.24
+  before shipping. Extended-part fees are $3.09 each (8 parts = $24.72).
+- BT1 is in the BOM/CPL but sits on the bottom side. Economic PCBA is top-side
+  only, so it is skipped there; JLC can only place it with Standard PCBA
+  (both sides, min 5 boards) after pre-ordering C6647344, which had 0 stock.
+- "Save to cart" silently does nothing until a Product Description is picked
+  (we used Research/Education/DIY -> DIY Hobby Circuit Board).
 
 ## Before you pay
 Check every part's rotation and pin 1 in JLC's placement preview. KiCad and JLC
