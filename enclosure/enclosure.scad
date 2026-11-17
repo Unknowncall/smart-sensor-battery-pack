@@ -19,16 +19,31 @@ xiao_t       = 1.0;    // XIAO PCB thickness
 usb_h        = 3.2;    // USB-C receptacle height on top of XIAO
 /* ------------------------------------------------------ */
 
-open_j3      = true;   // slot over J3 so a sensor module / wires can exit
+soil_exit    = true;   // cable exit through the J3 end wall (case stands J3-end down)
+battery_door = true;   // screw-on door in the base floor to swap the 18350
+open_j3      = false;  // slot in the lid top over J3 (for a module that sticks up)
 open_j5      = false;  // slot over J5 (middle 5-pin header)
-keyholes     = true;   // two keyhole slots in the back for wall/stake mount
+keyholes     = false;  // keyholes in the back (cannot be combined with the door)
 
 wall   = 1.8;
 clr    = 0.4;          // board-to-wall clearance
-floor_t= keyholes ? 4.0 : 1.6;
+floor_t= (keyholes || battery_door) ? 4.0 : 1.6;
+
+// battery door (x/y in board coordinates, z from the base's bottom face)
+door_t   = 2.0;                       // door thickness = recess depth
+door_open= [1.5, 7.0, 21.5, 49.0];    // through-hole the cell passes through
+door_rec = [0.0, 4.5, 23.0, 55.5];    // recess the door sits in
+door_gap = 0.15;
+door_screw = [11.5, 53.2];            // M2 x 8 countersunk / self-tapping
+tongue   = [7.0, 1.5, 16.0, 4.5];     // tab that hooks under the far end
+
+// soil cable exit (J3 pins 1..5 span x 4.26..14.42)
+soil_cx = 9.34;
+soil_w  = 5.0;
+soil_h  = 4.5;   // hole height above the base rim; size for your cable
 gap_under_batt = 1.0;
 lid_top_t = 1.6;
-split_above_pcb = 2.0; // base walls end this far above the PCB top
+split_above_pcb = 4.0; // base walls end this far above the PCB top (lip stops 1 mm above the board)
 lip_h  = 3.0;          // lid alignment lip depth
 lip_t  = 1.2;
 lip_clr= 0.15;
@@ -77,17 +92,51 @@ module keyhole_cut(y){
   }
 }
 
+module rect_xy(r, z0, h){ translate([r[0], r[1], z0]) cube([r[2]-r[0], r[3]-r[1], h]); }
+
+module door_cuts(){
+  rect_xy(door_open, base_z0-1, floor_t+2);                       // cell passes through
+  rect_xy(door_rec,  base_z0-1, door_t+1);                        // flush recess
+  rect_xy([tongue[0]-0.3, tongue[1]-0.3, tongue[2]+0.3, door_rec[1]+0.1],
+          base_z0+0.6, 1.2);                                      // undercut for the tab
+  translate([door_screw[0], door_screw[1], base_z0+door_t-0.1])
+    cylinder(d=1.6, h=floor_t-door_t+4-0.5);                      // M2 pilot, blind
+}
+
+module door(){
+  difference(){
+    union(){
+      // 0.5 mm extra play at the tab end so the door can tilt in tab-first
+      translate([door_rec[0]+door_gap, door_rec[1]+0.5, 0])
+        cube([door_rec[2]-door_rec[0]-2*door_gap, door_rec[3]-door_rec[1]-0.5-door_gap, door_t]);
+      translate([tongue[0], tongue[1], 0.7]) cube([tongue[2]-tongue[0], door_rec[1]-tongue[1]+1, 1.0]);
+    }
+    translate([door_screw[0], door_screw[1], -0.01]) {
+      cylinder(d=2.4, h=door_t+0.02);
+      cylinder(d1=4.4, d2=2.4, h=1.0);                            // countersink (outside face)
+    }
+    // finger grip lines near the screw end
+    for (i=[0:2]) translate([3, door_rec[3]-8-i*1.6, -0.01]) cube([4, 0.6, 0.5]);
+  }
+}
+
 module base(){
   difference(){
     outer_shell(base_z0, split_z);
     cavity(base_z0+floor_t, split_z+1);
-    if (keyholes){ keyhole_cut(12); keyhole_cut(36); }
+    if (keyholes && !battery_door){ keyhole_cut(12); keyhole_cut(36); }
+    if (battery_door) door_cuts();
     // snap grooves for lid bumps (long sides)
     for (x=[-clr-0.01, bw+clr+0.01]) for (y=[14,42])
       translate([x, y, split_z-lip_h+1.5]) rotate([0,90,0]) cylinder(d=1.6, h=1.2, center=true);
   }
   // PCB support pads
   for (p=pads) translate([p[0], p[1], base_z0+floor_t]) cube([p[2], p[3], pad_h]);
+  // screw boss for the door (stays clear of the holder body, which ends at y=50.6)
+  if (battery_door) difference(){
+    translate([door_screw[0], door_screw[1], base_z0+floor_t-0.01]) cylinder(d=4.6, h=4);
+    translate([door_screw[0], door_screw[1], base_z0]) cylinder(d=1.6, h=floor_t+4-0.5);
+  }
 }
 
 // ---------- LID ----------
@@ -106,6 +155,9 @@ module lid(){
     translate([bw-1, xiao_cy-usb_w/2, usb_cz-usb_hh/2]) cube([wall+clr+3, usb_w, usb_hh]);
     // lip relief around the USB end
     translate([bw-2, xiao_cy-usb_w/2-1, split_z-lip_h-1]) cube([5, usb_w+2, lip_h+1.01]);
+    // soil cable exit: notch in the J3 end wall + lip, closed underneath by the base rim
+    if (soil_exit)
+      translate([soil_cx-soil_w/2, bl-1, split_z-lip_h-1]) cube([soil_w, clr+wall+3, lip_h+1+soil_h]);
     // J3 sensor slot (top)
     if (open_j3) translate([2.5, 50.0, lid_inner_top-1]) cube([14, 6.4, lid_top_t+2]);
     if (open_j5) translate([5.0, 12.0, lid_inner_top-1]) cube([15, 7, lid_top_t+2]);
@@ -142,8 +194,12 @@ module board_ghost(){
 
 if (part=="base") base();
 else if (part=="lid") translate([0,bl,lid_z1]) rotate([180,0,0]) lid();   // printed top-down
-else if (part=="both"){ base(); translate([ow+8, bl, lid_z1]) rotate([180,0,0]) lid(); }
-else { color("lightgray") base(); color("white",0.5) lid(); board_ghost(); }
+else if (part=="door") door();            // print outside face down
+else if (part=="none") {}                 // for include-based fit checks
+else if (part=="both"){ base(); translate([ow+8, bl, lid_z1]) rotate([180,0,0]) lid();
+                        translate([2*ow+16, 0, base_z0]) door(); }
+else { color("lightgray") base(); color("white",0.5) lid(); board_ghost();
+       if (battery_door) color("orange") translate([0,0,base_z0]) door(); }
 
 echo(str("Outside: ", ow, " x ", ol, " x ", lid_z1-base_z0, " mm"));
 echo(str("XIAO bottom ", xiao_bot, " / top ", xiao_top, " above PCB bottom; USB centre z ", usb_cz));
