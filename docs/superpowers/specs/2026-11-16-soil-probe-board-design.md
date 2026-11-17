@@ -56,8 +56,8 @@ gets close to that per unit, with no hand soldering.
 ## Design
 
 ### Board
-- 2-layer FR-4, 1.6 mm, LeadFree HASL, black. About 25 mm x 155 mm.
-- **Head (top ~85 mm, above soil):** ESP32-C6-MINI-1 module with its antenna
+- 2-layer FR-4, 1.6 mm, LeadFree HASL, black. About 25 mm x 222 mm (as built: the 88 mm holder and the 25.5 mm WROOM-1 set the head length).
+- **Head (top ~85 mm, above soil):** ESP32-C6-WROOM-1 module with its antenna
   at the top edge and the module's copper keep-out honoured on both layers;
   USB-C on the top edge; the 18650 holder (SMD, top side) below the module;
   charger, protection, regulator, passives; SHTC3 on a peninsula separated by
@@ -92,7 +92,7 @@ gets close to that per unit, with no hand soldering.
 ### Parts with a JLC fee (6 x $3.09)
 | Part | LCSC | Unit |
 |---|---|---|
-| ESP32-C6-MINI-1-N4 | C5736265 | $4.10 |
+| ESP32-C6-WROOM-1-N8 (MINI-1 is "Standard PCBA only" at JLC) | C5366877 | $4.30 |
 | XC6220B331MR 3.3 V LDO | C3040644 | $0.20 |
 | TYPE-C-31-M-12 USB-C, 16-pin (has D+/D-) | C165948 | $0.19 |
 | SHTC3 | C194656 | $2.24 |
@@ -131,7 +131,7 @@ the cell and leaves the antenna end clear.
 - Board outline details and routing.
 
 ## Risks
-- ESP32-C6-MINI-1-N4 stock at JLC: 4,785 on 2026-11-16.
+- ESP32-C6-WROOM-1-N8 stock at JLC: 3,936 on 2026-11-16.
 - USB-C part stock: 516,975 (C165948), no concern.
 - 18650 holder stock: 2,616 (C2988620).
 - First-spin risk: a layout bug means another ~$25 order and ~2 weeks.

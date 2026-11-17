@@ -3,6 +3,12 @@ This is the experimental battery charging PCB designed for my YouTube video. You
 
 [![Watch the video](https://img.youtube.com/vi/-wEKOhVZ0NM/0.jpg)](https://www.youtube.com/watch?v=-wEKOhVZ0NM)
 
+> **In this fork:** [`hardware/soil-sensor/`](hardware/soil-sensor/) is a new,
+> separate design: an all-in-one ESP32-C6 soil sensor with an on-board 18650,
+> USB-C charging and a capacitive probe, fully JLC-assembled. [`jlcpcb/`](jlcpcb/)
+> and [`enclosure/`](enclosure/) hold order files and a printed case for the
+> original board below.
+
 ### Please note: 
 This board is currently missing a pull up resistor on the SCL/SDA lines - I will be adding this very soon. Software correction is possible using the XIAO pull-ups, and closing the FET early in the boot cycle. So using the board in its current form just makes the code a little more verbose. 
 
