@@ -1,0 +1,5 @@
+.pydeps/
+build/
+*.dsn
+*.ses
+tools/bin/

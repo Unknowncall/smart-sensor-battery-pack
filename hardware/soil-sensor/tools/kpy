@@ -1,0 +1,5 @@
+#!/bin/sh
+# Run KiCad's bundled Python with the project-local test deps on the path.
+HERE="$(cd "$(dirname "$0")/.." && pwd)"
+export PYTHONPATH="$HERE/.pydeps:$HERE/gen:$HERE${PYTHONPATH:+:$PYTHONPATH}"
+exec /Applications/KiCad/KiCad.app/Contents/Frameworks/Python.framework/Versions/3.9/bin/python3.9 "$@"
