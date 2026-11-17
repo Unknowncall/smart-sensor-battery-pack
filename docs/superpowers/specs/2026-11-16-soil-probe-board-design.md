@@ -1,4 +1,4 @@
-# Soil probe board: design
+# All-in-one soil sensor board: design
 
 Date: 2026-11-16
 Status: draft for approval
@@ -6,126 +6,128 @@ Status: draft for approval
 ## Why
 
 The owner wants battery soil sensors for their plants, reporting to Home
-Assistant, and wants the part that is theirs made in house. Earlier in the
-project a full custom battery board (charger, protection, LDO, XIAO sockets)
-priced out at about $55 for two assembled boards plus about $65 of other
-parts and shipping, which is far too much. The fix is to buy the commodity
-part (MCU + LiPo charging) and design only the probe.
+Assistant, made in house. The first board in this repo (XIAO on sockets,
+BQ21040 charger, BQ29700 protection, TPS7A05 LDO) priced at about $122 for two
+finished sensors, which is far too much for what it does. Commercial Zigbee
+soil sensors sell for about $11. The goal is a board we design ourselves that
+gets close to that per unit, with no hand soldering.
 
 ## Goals
 
-- A custom PCB that is the soil probe itself: capacitive electrodes on the
-  board, plus air temperature and humidity.
-- Plugs into a bought MCU board with a cable. No hand soldering anywhere.
-- Fully assembled by JLCPCB, Economic PCBA, top side only.
-- Works with ESPHome over WiFi, deep-sleeping between readings.
-- Cheap enough per unit that a second batch is just the PCB order.
+- One PCB that is the whole sensor: ESP32-C6 radio/MCU, LiPo charging over
+  USB-C, capacitive soil probe as copper traces on the board, air temperature
+  and humidity, battery voltage.
+- Fully assembled by JLCPCB (Economic PCBA, top side only). The owner only
+  plugs in a battery and flashes firmware over USB-C.
+- ESPHome over WiFi with deep sleep between readings.
+- Minimum per-order JLC fees: use Basic and Preferred parts wherever they
+  exist; only pay the $3.09 Extended fee where nothing else will do.
 
 ## Non-goals
 
-- On-board battery charging, protection, regulators, or a radio (the MCU
-  board does those).
-- Zigbee firmware in v1 (possible later on the same hardware).
-- Soil EC/fertility, light, or anything beyond moisture + temperature + RH.
+- Zigbee firmware in v1 (the ESP32-C6 can do it later).
+- Soil EC/fertility or light sensing.
+- An on-board battery protection IC (see Battery).
 
-## Anti-goals (would make it a failure even if it works)
+## Anti-goals
 
-- Any step that needs the owner to solder.
-- A probe that corrodes (bare copper in soil).
-- A design that needs custom firmware flashed onto a chip on the probe board.
+- Anything the owner has to solder.
+- Bare copper in the soil.
+- A part that needs its own firmware or a programmer beyond USB-C.
 
 ## Constraints
 
-- JLC: every non-Basic part costs $3.09 per order; keep Extended parts to
-  the minimum needed. Setup $8.24 + stencil $1.55 per order.
-- Economic PCBA must use a non-OSP finish (HASL or LeadFree HASL).
-- MCU board: Adafruit ESP32-C6 Feather (product 5933): ESP32-C6, LiPo
-  charging + JST-PH battery jack, MAX17048 fuel gauge, STEMMA QT (JST-SH
-  4-pin I2C, 3.3V) port, ~17 uA deep sleep. $14.95, out of stock at Adafruit
-  on 2026-11-16, so source from a distributor.
-- The only no-solder link to the Feather is STEMMA QT, so the probe must
-  speak I2C.
+- JLC Economic PCBA: top side only; needs HASL or LeadFree HASL (OSP blocks
+  Economic). Setup $8.24 + stencil $1.55 per order; $3.09 per Extended part
+  type; Basic and Preferred Extended parts have no per-part fee (verified
+  against the earlier order: 11 non-Basic parts, 10 fees, the 11th was
+  Preferred).
+- No radio chip and no humidity sensor exists in JLC's Basic or Preferred
+  lists (searched ESP32, nRF52840, Zigbee, BLE, SHT, AHT, HDC), so those cost
+  a fee no matter what.
 
 ## Approaches considered
 
-| | Approach | Trade-off |
+| | Approach | Why not / why |
 |---|---|---|
-| **A (picked)** | Feather + probe board with TI FDC1004 capacitance-to-digital chip + SHTC3, STEMMA QT cable | No firmware on the probe; FDC1004 is an Extended part (~$4) with limited JLC stock; needs a small ESPHome external component |
-| B | Feather + probe board with a tiny MCU (CH32V003 class) doing RC/charge-time sensing over I2C | Cheaper chip, but needs our own probe firmware and a programmer, which breaks "no soldering / no extra tooling" |
-| C | FireBeetle 2 ESP32-C6 + analog probe (TLC555-style oscillator) read by ADC | Cheapest ($6.90 board, Basic parts) but the FireBeetle ships with loose headers, so it needs soldering. Rejected by the owner |
-
-The owner picked the Feather / plug-in-only path; A is the way to make the
-probe talk I2C without a second firmware.
+| A | Keep the original XIAO battery board | ~$122 for two sensors; most parts Extended; needs hand-soldered holder |
+| B | Buy Adafruit ESP32-C6 Feather ($14.95) + our own probe board on STEMMA QT | Still needs its own JLC order for the probe, so ~$80+ for two; Feather out of stock |
+| **C (picked)** | One all-in-one board, Basic/Preferred parts first | ~$70 delivered for two, ~$7 per board in parts after that |
 
 ## Design
 
 ### Board
-- 2-layer FR-4, 1.6 mm, LeadFree HASL, black or green. About 22 mm wide,
-  about 90 mm long, pointed tip for pushing into soil.
-- Two zones:
-  - **Head (top ~25 mm, stays above soil):** FDC1004, SHTC3, decoupling,
-    STEMMA QT (JST-SH 4-pin, right angle) connector at the top edge.
-  - **Probe (bottom ~65 mm, goes in soil):** sensing electrode connected to
-    FDC1004 CIN1, surrounded by a shield trace driven from SHLD1, with a GND
-    reference on the back. Electrodes fully under solder mask; no exposed
-    copper, no vias in the soil zone.
-- SHTC3 sits on a peninsula cut by a slot so heat and soil moisture
-  readings don't skew air temperature/RH.
-- Fill line on silkscreen marking the maximum insertion depth.
+- 2-layer FR-4, 1.6 mm, LeadFree HASL, black. About 25 mm x 110 mm.
+- **Head (top ~40 mm, above soil):** ESP32-C6-MINI-1 module with its antenna
+  at the top edge and the module's copper keep-out honoured on both layers;
+  USB-C on the top edge; JST-PH 2-pin battery connector; charger, regulator,
+  passives; SHTC3 on a peninsula separated by a slot.
+- **Probe (bottom ~70 mm, in soil):** sensing electrode traces with a ground
+  return, fully under solder mask; no vias or exposed copper below the fill
+  line; pointed tip. Silkscreen fill line marks max insertion depth.
 
-### Parts (all top side, all placed by JLC)
-| Ref | Part | LCSC | JLC tier |
-|---|---|---|---|
-| U1 | FDC1004QDGSRQ1 (VSSOP-10) | C2652097 | Extended |
-| U2 | SHTC3 (DFN-4 2x2) | C194656 | Extended |
-| J1 | JST-SH 4-pin right-angle (STEMMA QT) SM04B-SRSS-TB | C160404 | Extended |
-| C1-C3 | 100 nF 0402 | C1525 | Basic |
-| C4 | 1 uF 0402 (FDC1004 VDD bulk) | Basic part chosen at layout | Basic |
+### Circuit
+- **USB-C (16-pin; 6-pin USB-C parts are power-only and can't flash):** 5V in, 5.1k CC pull-downs, D+/D- to the
+  ESP32-C6's native USB (GPIO12/13) so ESPHome flashes and logs over the same
+  port. No USB-UART chip.
+- **Charging:** TP4056 from VBUS to the battery; charge current ~500 mA via
+  RPROG; charge LED (Basic 0603).
+- **Regulator:** XC6220 3.3 V (low quiescent current, handles WiFi TX peaks)
+  from the battery, or from VBUS through the TP4056 when the battery is
+  charging.
+- **ESP32-C6:** EN RC delay; GPIO9 (boot strap) to a test pad for recovery
+  only (esptool can enter download mode over native USB without a button).
+- **Soil probe:** one GPIO drives a high-frequency PWM (ESP32 LEDC) through a
+  series resistor into the probe electrode; the electrode-to-soil capacitance
+  sets the amplitude; a 1N4148WS diode + RC peak detector turns that into a
+  DC level read by an ADC pin. Same principle as the open-source b-parasite.
+  All Basic parts. Exact values left to the builder; check b-parasite's
+  licence before reusing its values.
+- **Battery voltage:** divider from BAT to an ADC pin, high-value resistors
+  (a few uA drain).
+- **SHTC3** on I2C, powered from 3.3 V.
 
-I2C pull-ups: the Feather's STEMMA QT port already has them; add 10k
-footprints marked do-not-place as a fallback.
+### Parts with a JLC fee (5 x $3.09)
+| Part | LCSC | Unit |
+|---|---|---|
+| ESP32-C6-MINI-1-N4 | C5736265 | $4.10 |
+| XC6220B331MR 3.3 V LDO | C3040644 | $0.20 |
+| TYPE-C-31-M-12 USB-C, 16-pin (has D+/D-) | C165948 | $0.19 |
+| JST-PH 2-pin SMD (exact part at layout) | e.g. C51940124 | ~$0.04 |
+| SHTC3 | C194656 | $2.24 |
 
-STEMMA QT pinout (Adafruit): GND, 3.3V, SDA, SCL.
+No-fee parts: TP4056 (C16581, Preferred), 1N4148WS (C2128, Basic), all
+resistors, capacitors and the LED (Basic).
 
-I2C addresses: FDC1004 0x50, SHTC3 0x70, MAX17048 (on Feather) 0x36. No
-conflicts.
+### Battery
+- 1000 mAh LiPo with JST-PH 2.0 plug and a **built-in protection circuit**
+  (stated by the seller). This replaces an on-board protection IC, which
+  would add a fee. Polarity must match the board's silkscreen.
+- Expected life on WiFi, a reading every 10 minutes: roughly 2 months per
+  charge (estimate; to be measured).
 
-### Firmware (ESPHome, on the Feather)
-- `shtc3` sensor (built in).
-- MAX17048 battery % via ESPHome's MAX17043-family support if present;
-  otherwise a small lambda.
-- FDC1004: an ESPHome external component (C++) that sets CAPDAC, triggers a
-  single measurement on CIN1, reads the 24-bit result, and reports pF.
-  Moisture % is a calibration curve (dry air / water endpoints) done in YAML.
-- Deep sleep 10 minutes between readings.
-
-### Power / battery
-- 1000 mAh LiPo with JST-PH 2.0 plug. **Polarity must match Adafruit's**
-  (many AliExpress LiPos are reversed and will damage the Feather).
-- Estimated life on WiFi, every 10 minutes: about 2 months per charge
-  (estimate, to be measured). Charges over the Feather's USB-C.
+### Firmware (ESPHome)
+- Deep sleep 10 minutes; on wake: start PWM, settle, read soil ADC, stop
+  PWM; read SHTC3; read battery ADC; publish; sleep.
+- Moisture % from a two-point calibration (dry air, glass of water) in YAML.
 
 ### Enclosure
-Small 3D-printed housing for the Feather + LiPo with a slot that grips the
-probe board head; cable runs inside. Designed after the board, as a separate
-step.
+Separate step after the board: a small printed cap over the head that holds
+the LiPo and leaves the antenna end clear.
 
-## Cost estimate (2 sensors, before shipping)
-- JLC: 5 PCBs + 2 assembled: setup $9.79 + Extended fees 3 x $3.09 + parts
-  ~$13 + PCB ~$5 = **~$37**.
-- 2 x Feather ESP32-C6 $29.90, 2 x LiPo ~$10, 2 x STEMMA QT cable ~$2.
-- About **$80 before shipping for two**; the probe board drops to ~$4 each in
-  later batches since setup and Extended fees are per order.
+## Cost estimate
+- First JLC order, 5 PCBs + 2 assembled: setup $9.79 + fees $15.45 + PCBs ~$6
+  + parts ~$14 = **~$45** before shipping. With shipping and 2 LiPos,
+  **~$70 for two finished sensors**.
+- Later orders: ~$7 per board in parts + ~$25 per order.
 
 ## Left to the builder
-- Exact electrode geometry (interdigitated vs plate + shield), board outline
-  details, and the FDC1004 CAPDAC default.
-- KiCad symbol/footprint sources (KiCad 10 stock libs where possible).
-- Which Basic 1 uF part.
-- ESPHome external component structure.
+- Probe excitation frequency and RC/diode values; electrode geometry.
+- Exact JST-PH SMD part, LED/resistor values, RPROG value.
+- Board outline details and routing.
 
 ## Risks
-- FDC1004 stock at JLC is low (56 pcs of C2652097); if it runs out, the
-  DSCJ (WSON-10, C2652081) variant is the fallback with a footprint change.
-- Feather availability: out of stock at Adafruit; check DigiKey/Mouser/Pimoroni.
-- Probe calibration varies with soil type; the YAML calibration handles it.
+- ESP32-C6-MINI-1-N4 stock at JLC: 4,785 on 2026-11-16.
+- USB-C part stock: 516,975 (C165948), no concern.
+- First-spin risk: a layout bug means another ~$25 order and ~2 weeks.
+- Probe readings depend on soil type; calibration in YAML covers this.
