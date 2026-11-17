@@ -117,7 +117,7 @@ resistors, capacitors and the LED (Basic).
 
 ### Enclosure
 Separate step after the board: a small printed cap over the head that holds
-the LiPo and leaves the antenna end clear.
+the cell and leaves the antenna end clear.
 
 ## Cost estimate
 - First JLC order, 5 PCBs + 2 assembled: setup $9.79 + fees 6 x $3.09 =
