@@ -34,10 +34,10 @@ def test_local_footprint_pads(lib, name, expected):
     assert pad_names(load(lib, name)) == expected
 
 
-def test_esp32_c6_mini_module_loads_with_all_pads():
-    names = pad_names(load("RF_Module", "ESP32-C6-MINI-1"))
-    # Module pins 1..53 plus the exposed ground pads.
-    assert {str(n) for n in range(1, 54)} <= set(names)
+def test_esp32_c6_wroom_module_loads_with_all_pads():
+    names = pad_names(load("soil_sensor", "ESP32-C6-WROOM-1"))
+    # Castellated pins 1..28 plus exposed-pad segments 29..37.
+    assert {str(n) for n in range(1, 38)} <= set(names)
 
 
 def test_usb_c_has_cc_and_both_data_pairs():

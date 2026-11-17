@@ -10,7 +10,7 @@ import parts
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STOCK = "/Applications/KiCad/KiCad.app/Contents/SharedSupport/footprints"
 
-EXTENDED_ALLOWED = {"C5736265", "C3040644", "C165948", "C194656", "C2988620", "C80628"}
+EXTENDED_ALLOWED = {"C5366877", "C3040644", "C165948", "C194656", "C2988620", "C80628"}
 REQUIRED_NETS = {
     "VBUS", "VBAT", "VCELL_P", "VCELL_N", "3V3", "GND", "SDA", "SCL", "USB_DP",
     "USB_DN", "PROBE_DRV", "PROBE_EL", "SOIL_ADC", "BAT_ADC", "EN", "BOOT",
@@ -95,14 +95,14 @@ def test_bulk_capacitance_on_3v3_at_least_22uF():
 
 
 def test_esp32_pin_assignments():
-    assert ("U_MCU", "25") in pads_on("PROBE_DRV")   # IO19
-    assert ("U_MCU", "5") in pads_on("SOIL_ADC")     # IO2
-    assert ("U_MCU", "6") in pads_on("BAT_ADC")      # IO3
-    assert ("U_MCU", "28") in pads_on("SDA")         # IO22
-    assert ("U_MCU", "29") in pads_on("SCL")         # IO23
-    assert ("U_MCU", "17") in pads_on("USB_DN")      # IO12
-    assert ("U_MCU", "18") in pads_on("USB_DP")      # IO13
-    assert ("U_MCU", "23") in pads_on("BOOT")        # IO9
+    assert ("U_MCU", "17") in pads_on("PROBE_DRV")   # IO19
+    assert ("U_MCU", "27") in pads_on("SOIL_ADC")    # IO2
+    assert ("U_MCU", "26") in pads_on("BAT_ADC")     # IO3
+    assert ("U_MCU", "20") in pads_on("SDA")         # IO22
+    assert ("U_MCU", "21") in pads_on("SCL")         # IO23
+    assert ("U_MCU", "13") in pads_on("USB_DN")      # IO12
+    assert ("U_MCU", "14") in pads_on("USB_DP")      # IO13
+    assert ("U_MCU", "15") in pads_on("BOOT")        # IO9
 
 
 def test_report_lists_every_net():

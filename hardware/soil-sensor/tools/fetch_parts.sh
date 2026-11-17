@@ -22,6 +22,7 @@ fetch C80628   XB5353A_SOT-23-5
 fetch C16581   TP4056_ESOP-8
 fetch C3040644 XC6220_SOT-23-5
 fetch C194656  SHTC3_DFN-4
+fetch C5366877 ESP32-C6-WROOM-1
 
 # Auto-router. Freerouting 2.5.0 needs Java 25+ (brew install openjdk).
 FR="$HERE/tools/bin/freerouting-2.5.0.jar"
@@ -33,3 +34,5 @@ echo "f6f51bb02245e8e717f9359bd260cc9c5c0b1bc0acc8b7cb2cd5b8ffeb5de3c7  $FR" | s
 
 # EasyEDA exports the holder's locating peg as a plated hole with no ring; it is non-plated.
 sed -i '' 's/(pad "" thru_hole circle (at 8.00 -35.84)/(pad "" np_thru_hole circle (at 8.00 -35.84)/' "$OUT.pretty/BH-18650-B1BA002.kicad_mod"
+# EasyEDA leaves the WROOM-1 exposed-pad thermal vias unnumbered (no net); tie them to GND pad 29.
+sed -i '' 's/(pad "" thru_hole/(pad "29" thru_hole/' "$OUT.pretty/ESP32-C6-WROOM-1.kicad_mod"

@@ -20,52 +20,53 @@ LOCAL_LIB = os.path.join(HERE, "lib", "soil_sensor.pretty")
 KCLI = "/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli"
 
 ORIGIN = (50.0, 50.0)          # where the board sits on the KiCad page
-WIDTH, LENGTH = 25.0, 210.0
-TIP_START = 198.0              # outline narrows to a point from here
-FILL_LINE_Y_MM = 140.0         # max insertion depth; nothing but the electrode below
-MCU_Y = 11.15                  # module origin; antenna top lands on the board edge
-KEEPOUT_RECT_MM = (0.0, 0.0, WIDTH, MCU_Y - 5.6)   # module's antenna keep-out on the board
-ELECTRODE = (7.5, 142.0, 17.5, 195.0)               # x0, y0, x1, y1 on F.Cu, under mask
+WIDTH, LENGTH = 25.0, 222.0
+TIP_START = 210.0              # outline narrows to a point from here
+FILL_LINE_Y_MM = 152.0         # max insertion depth; nothing but the electrode below
+MCU_Y = 15.85                  # WROOM-1 origin; its antenna end lands on the board edge
+KEEPOUT_RECT_MM = (0.0, 0.0, WIDTH, MCU_Y - 9.6)   # antenna keep-out (module y -15.8..-9.6)
+ELECTRODE = (7.5, 154.0, 17.5, 207.0)               # x0, y0, x1, y1 on F.Cu, under mask
+
+D = 12.0  # everything below the module row sits 12 mm lower than with the MINI-1
 
 # ref: (x, y, rotation_degrees)
 PLACEMENT = {
     "U_MCU": (12.5, MCU_Y, 0),
-    # left of the module
-    "R_EN": (2.6, 7.2, 0), "C_EN": (2.6, 8.6, 0), "R_BOOT": (2.6, 10.0, 0),
-    "R_IO8": (2.6, 11.4, 0), "R_SDA": (2.6, 12.8, 0), "R_SCL": (2.6, 14.2, 0),
-    # right of the module
-    "C_MCU2": (22.4, 7.2, 0), "C_MCU1": (22.4, 9.4, 0), "C_BULK": (22.4, 12.0, 0),
-    "C_LDOOUT": (22.4, 14.4, 0),
+    # support row directly under the module
+    "R_EN": (2.0, 27.4, 0), "C_EN": (4.0, 27.4, 0), "R_BOOT": (6.0, 27.4, 0),
+    "R_IO8": (8.0, 27.4, 0), "R_SDA": (10.0, 27.4, 0), "R_SCL": (12.0, 27.4, 0),
+    "C_MCU2": (14.0, 27.4, 0), "C_LDOOUT": (16.0, 27.4, 0),
+    "C_MCU1": (18.6, 27.9, 90), "C_BULK": (21.2, 27.9, 90),
     # USB-C, mating face on the left edge
-    "J_USB": (3.7, 23.0, -90),
+    "J_USB": (3.7, 23.0 + D, -90),
     # charger / regulator block
-    "U_CHG": (13.2, 23.4, 0), "C_VBUS": (18.6, 19.6, 0), "C_VBAT": (18.6, 22.0, 0),
-    "R_PROG": (18.3, 24.2, 0), "R_LED": (18.3, 25.6, 0), "LED_CHG": (18.6, 27.2, 0),
-    "U_LDO": (22.7, 19.9, 90), "C_LDOIN": (22.7, 23.0, 0),
-    "R_CC1": (10.6, 18.6, 0), "R_CC2": (10.6, 28.2, 0),
+    "U_CHG": (13.2, 23.4 + D, 0), "C_VBUS": (18.6, 19.6 + D, 0), "C_VBAT": (18.6, 22.0 + D, 0),
+    "R_PROG": (18.3, 24.2 + D, 0), "R_LED": (18.3, 25.6 + D, 0), "LED_CHG": (18.6, 27.2 + D, 0),
+    "U_LDO": (22.7, 20.4 + D, 90), "C_LDOIN": (22.7, 23.5 + D, 0),
+    "R_CC1": (10.6, 18.6 + D, 0), "R_CC2": (10.6, 28.2 + D, 0),
     # row between the charger and the holder
-    "R_BAT1": (12.6, 30.6, 0), "R_BAT2": (14.6, 30.6, 0), "C_BATADC": (16.6, 30.6, 0),
-    "Q_REV": (20.6, 30.9, 0), "R_QG": (23.9, 30.9, 90),
+    "R_BAT1": (12.6, 30.6 + D, 0), "R_BAT2": (14.6, 30.6 + D, 0), "C_BATADC": (16.6, 30.6 + D, 0),
+    "Q_REV": (20.6, 30.9 + D, 0), "R_QG": (23.9, 30.9 + D, 90),
     # the cell
-    "BT1": (12.5, 77.0, 0),
+    "BT1": (12.5, 77.0 + D, 0),
     # protection, probe front end and SHTC3 below the holder
-    "U_PROT": (5.0, 124.0, 0), "C_PROT": (5.0, 127.2, 0), "R_PROT": (8.6, 124.0, 90),
-    "R_DRV": (11.5, 127.0, 0), "D_PROBE": (12.5, 130.0, 0),
-    "C_SOIL": (10.5, 133.0, 0), "R_SOIL": (13.5, 133.0, 0),
-    "U_RH": (21.8, 131.0, 0), "C_RH": (21.8, 134.8, 0),
+    "U_PROT": (5.0, 124.0 + D, 0), "C_PROT": (5.0, 127.2 + D, 0), "R_PROT": (8.6, 124.0 + D, 90),
+    "R_DRV": (11.5, 127.0 + D, 0), "D_PROBE": (12.5, 130.0 + D, 0),
+    "C_SOIL": (10.5, 133.0 + D, 0), "R_SOIL": (13.5, 133.0 + D, 0),
+    "U_RH": (21.8, 131.0 + D, 0), "C_RH": (21.8, 134.8 + D, 0),
 }
 
 # L-shaped slot that puts the SHTC3 on a peninsula (thermal isolation).
-SHTC3_SLOT = [(17.6, 124.5), (23.9, 124.5), (23.9, 125.5), (18.6, 125.5),
-              (18.6, 137.5), (17.6, 137.5)]
+SHTC3_SLOT = [(17.6, 124.5 + D), (23.9, 124.5 + D), (23.9, 125.5 + D), (18.6, 125.5 + D),
+              (18.6, 137.5 + D), (17.6, 137.5 + D)]
 
 # Freerouting ignores internal Edge.Cuts, so fence the slot and its 1 mm bridge
 # with track/via keep-outs; traces then reach the SHTC3 from below.
-SLOT_KEEPOUTS = [(17.0, 124.0, WIDTH, 126.0), (17.0, 124.0, 19.2, 138.1)]
+SLOT_KEEPOUTS = [(17.0, 124.0 + D, WIDTH, 126.0 + D), (17.0, 124.0 + D, 19.2, 138.1 + D)]
 # Freerouting's edge clearance is looser than JLC's 0.3 mm; fence the long edges.
 EDGE_KEEPOUTS = [(0.0, 0.0, 0.4, TIP_START), (WIDTH - 0.4, 0.0, WIDTH, TIP_START)]
 
-TEST_PADS = {"TP_BOOT": ("BOOT", 1.6, 16.0), "TP_GND": ("GND", 3.8, 16.0)}
+TEST_PADS = {"TP_BOOT": ("BOOT", 23.6, 26.6), "TP_GND": ("GND", 23.6, 29.0)}
 
 
 def _mm(v):
@@ -119,7 +120,7 @@ def _zone(board, net, layer, points, priority=0):
     return z
 
 
-def _track_keepout(board, x0, y0, x1, y1):
+def _track_keepout(board, x0, y0, x1, y1, pours=True):
     z = pcbnew.ZONE(board)
     z.SetIsRuleArea(True)
     ls = pcbnew.LSET()
@@ -128,7 +129,7 @@ def _track_keepout(board, x0, y0, x1, y1):
     z.SetLayerSet(ls)
     z.SetDoNotAllowTracks(True)
     z.SetDoNotAllowVias(True)
-    z.SetDoNotAllowZoneFills(False)
+    z.SetDoNotAllowZoneFills(not pours)
     z.SetDoNotAllowPads(False)
     z.SetDoNotAllowFootprints(False)
     outline = z.Outline()
@@ -248,6 +249,7 @@ def build(path, zones=True):
     _polyline(board, pcbnew.Edge_Cuts, SHTC3_SLOT, width=0.1)
     for box in SLOT_KEEPOUTS + EDGE_KEEPOUTS:
         _track_keepout(board, *box)
+    _track_keepout(board, *KEEPOUT_RECT_MM, pours=False)
 
     if zones:
         head = [(0, 0), (WIDTH, 0), (WIDTH, FILL_LINE_Y_MM), (0, FILL_LINE_Y_MM)]
@@ -257,11 +259,11 @@ def build(path, zones=True):
     _polyline(board, pcbnew.F_SilkS, [(0.8, FILL_LINE_Y_MM), (WIDTH - 0.8, FILL_LINE_Y_MM)],
               closed=False, width=0.3)
     _text(board, "SOIL LINE", WIDTH / 2, FILL_LINE_Y_MM - 1.4, 1.0)
-    _text(board, "+", 19.5, 35.7, 2.0)
-    _text(board, "-", 19.5, 118.3, 2.0)
-    _text(board, "SOIL SENSOR v1", 21.3, 168.0, 1.2, angle=90)
-    _text(board, "JLCJLCJLCJLC", 5.5, 137.0, 0.8)
-    _text(board, "BOOT", 1.6, 17.2, 0.6)
+    _text(board, "+", 19.5, 35.7 + D, 2.0)
+    _text(board, "-", 19.5, 118.3 + D, 2.0)
+    _text(board, "SOIL SENSOR v1", 21.3, 180.0, 1.2, angle=90)
+    _text(board, "JLCJLCJLCJLC", 5.5, 149.0, 0.8)
+    _text(board, "BOOT", 21.6, 26.6, 0.6)
 
     pcbnew.SaveBoard(path, board)
     if zones:

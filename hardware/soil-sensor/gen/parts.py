@@ -42,7 +42,7 @@ def _p(ref, value):
 
 _PARTS = [
     # Fee-bearing (Extended) parts: exactly the six the design allows.
-    Part("U_MCU", "ESP32-C6-MINI-1-N4", "RF_Module:ESP32-C6-MINI-1", "C5736265", "extended"),
+    Part("U_MCU", "ESP32-C6-WROOM-1-N8", "soil_sensor:ESP32-C6-WROOM-1", "C5366877", "extended"),
     Part("U_LDO", "XC6220B331MR", "soil_sensor:XC6220_SOT-23-5", "C3040644", "extended"),
     Part("J_USB", "TYPE-C-31-M-12", "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12", "C165948", "extended"),
     Part("U_RH", "SHTC3", "soil_sensor:SHTC3_DFN-4", "C194656", "extended"),

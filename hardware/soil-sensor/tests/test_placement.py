@@ -12,7 +12,7 @@ import parts
 
 KCLI = "/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli"
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BOARD_W, BOARD_L = 25.0, 210.0
+BOARD_W, BOARD_L = 25.0, 222.0
 MM = 1e6
 
 

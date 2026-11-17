@@ -1,8 +1,10 @@
 """Connections on the soil sensor board: net name -> [(ref, pad), ...].
 
 Pin maps come from each part's datasheet / KiCad footprint:
-- ESP32-C6-MINI-1: KiCad RF_Module symbol (pin 5 IO2, 6 IO3, 8 EN, 17 IO12/D-,
-  18 IO13/D+, 22 IO8, 23 IO9, 25 IO19, 28 IO22, 29 IO23; GND 1,2,11,14,36-53).
+- ESP32-C6-WROOM-1 (LCSC C5366877 symbol): 1 GND, 2 3V3, 3 EN, 10 IO8,
+  13 IO12/D-, 14 IO13/D+, 15 IO9, 17 IO19, 20 IO22, 21 IO23, 26 IO3, 27 IO2,
+  28 and 29-37 (exposed pad) GND. Chosen over the MINI-1: JLC lists the MINI-1
+  as "Standard PCBA only".
 - TYPE-C-31-M-12: USB-C standard pinout (A5/B5 CC, A6/B6 D+, A7/B7 D-).
 - TP4056 ESOP-8: 1 TEMP, 2 PROG, 3 GND, 4 VCC, 5 BAT, 6 STDBY, 7 CHRG, 8 CE, 9 EP.
 - XB5353A (XySemi REV0.4 p.2): 1 VT (vendor test, unused), 2 GND, 3 VDD, 4/5 VM.
@@ -20,7 +22,7 @@ def _two(ref, a, b):
     return [(a, (ref, "1")), (b, (ref, "2"))]
 
 
-_GND_MCU = ["1", "2", "11", "14"] + [str(n) for n in range(36, 54)]
+_GND_MCU = ["1", "28"] + [str(n) for n in range(29, 38)]
 
 _CONNECTIONS = [
     # --- USB-C ---
@@ -52,11 +54,11 @@ _CONNECTIONS = [
     *_two("C_BULK", "3V3", "GND"), *_two("C_MCU1", "3V3", "GND"), *_two("C_MCU2", "3V3", "GND"),
     # --- ESP32-C6 ---
     *[("GND", ("U_MCU", p)) for p in _GND_MCU],
-    ("3V3", ("U_MCU", "3")), ("EN", ("U_MCU", "8")),
-    ("SOIL_ADC", ("U_MCU", "5")), ("BAT_ADC", ("U_MCU", "6")),
-    ("USB_DN", ("U_MCU", "17")), ("USB_DP", ("U_MCU", "18")),
-    ("IO8", ("U_MCU", "22")), ("BOOT", ("U_MCU", "23")),
-    ("PROBE_DRV", ("U_MCU", "25")), ("SDA", ("U_MCU", "28")), ("SCL", ("U_MCU", "29")),
+    ("3V3", ("U_MCU", "2")), ("EN", ("U_MCU", "3")),
+    ("SOIL_ADC", ("U_MCU", "27")), ("BAT_ADC", ("U_MCU", "26")),
+    ("USB_DN", ("U_MCU", "13")), ("USB_DP", ("U_MCU", "14")),
+    ("IO8", ("U_MCU", "10")), ("BOOT", ("U_MCU", "15")),
+    ("PROBE_DRV", ("U_MCU", "17")), ("SDA", ("U_MCU", "20")), ("SCL", ("U_MCU", "21")),
     *_two("R_EN", "EN", "3V3"), *_two("C_EN", "EN", "GND"),
     *_two("R_BOOT", "BOOT", "3V3"), *_two("R_IO8", "IO8", "3V3"),
     # --- SHTC3 + I2C ---
@@ -77,11 +79,10 @@ NO_CONNECT = {
     ("U_CHG", "6"),                            # STDBY
     ("U_PROT", "1"),                           # VT, vendor test pin
     ("U_LDO", "4"),                            # NC
-    # ESP32 module: NC pins and unused GPIOs (IO4, IO5, IO0, IO1, IO6, IO7,
-    # IO14, IO15, IO18, IO20, IO21, RXD0, TXD0)
-    *[("U_MCU", p) for p in ("4", "7", "21", "32", "33", "34", "35",
-                             "9", "10", "12", "13", "15", "16", "19", "20",
-                             "24", "26", "27", "30", "31")],
+    # ESP32 module: NC pin and unused GPIOs (IO4-7, IO0, IO1, IO10, IO11,
+    # IO18, IO20, IO21, IO15, RXD0, TXD0)
+    *[("U_MCU", p) for p in ("4", "5", "6", "7", "8", "9", "11", "12", "16",
+                             "18", "19", "22", "23", "24", "25")],
 }
 
 NETS = {}
