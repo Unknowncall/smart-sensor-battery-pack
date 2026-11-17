@@ -59,6 +59,12 @@ PLACEMENT = {
 SHTC3_SLOT = [(17.6, 124.5), (23.9, 124.5), (23.9, 125.5), (18.6, 125.5),
               (18.6, 137.5), (17.6, 137.5)]
 
+# Freerouting ignores internal Edge.Cuts, so fence the slot and its 1 mm bridge
+# with track/via keep-outs; traces then reach the SHTC3 from below.
+SLOT_KEEPOUTS = [(17.0, 124.0, WIDTH, 126.0), (17.0, 124.0, 19.2, 138.1)]
+# Freerouting's edge clearance is looser than JLC's 0.3 mm; fence the long edges.
+EDGE_KEEPOUTS = [(0.0, 0.0, 0.4, TIP_START), (WIDTH - 0.4, 0.0, WIDTH, TIP_START)]
+
 TEST_PADS = {"TP_BOOT": ("BOOT", 1.6, 16.0), "TP_GND": ("GND", 3.8, 16.0)}
 
 
@@ -104,12 +110,32 @@ def _zone(board, net, layer, points, priority=0):
     z.SetLocalClearance(_mm(0.3))
     z.SetMinThickness(_mm(0.25))
     z.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)
+    z.SetIslandRemovalMode(pcbnew.ISLAND_REMOVAL_MODE_ALWAYS)
     outline = z.Outline()
     outline.NewOutline()
     for x, y in points:
         outline.Append(_pt(x, y))
     board.Add(z)
     return z
+
+
+def _track_keepout(board, x0, y0, x1, y1):
+    z = pcbnew.ZONE(board)
+    z.SetIsRuleArea(True)
+    ls = pcbnew.LSET()
+    ls.AddLayer(pcbnew.F_Cu)
+    ls.AddLayer(pcbnew.B_Cu)
+    z.SetLayerSet(ls)
+    z.SetDoNotAllowTracks(True)
+    z.SetDoNotAllowVias(True)
+    z.SetDoNotAllowZoneFills(False)
+    z.SetDoNotAllowPads(False)
+    z.SetDoNotAllowFootprints(False)
+    outline = z.Outline()
+    outline.NewOutline()
+    for x, y in ((x0, y0), (x1, y0), (x1, y1), (x0, y1)):
+        outline.Append(_pt(x, y))
+    board.Add(z)
 
 
 def _text(board, text, x, y, size=1.0, layer=pcbnew.F_SilkS, angle=0):
@@ -188,7 +214,7 @@ def _design_rules(board):
     nc.SetViaDrill(_mm(0.3))
 
 
-def build(path):
+def build(path, zones=True):
     board = pcbnew.NewBoard(path)
     _design_rules(board)
 
@@ -220,23 +246,26 @@ def build(path):
 
     _polyline(board, pcbnew.Edge_Cuts, _outline_points(), width=0.1)
     _polyline(board, pcbnew.Edge_Cuts, SHTC3_SLOT, width=0.1)
+    for box in SLOT_KEEPOUTS + EDGE_KEEPOUTS:
+        _track_keepout(board, *box)
 
-    head = [(0, 0), (WIDTH, 0), (WIDTH, FILL_LINE_Y_MM), (0, FILL_LINE_Y_MM)]
-    _zone(board, nets["GND"], pcbnew.F_Cu, head)
-    _zone(board, nets["GND"], pcbnew.B_Cu, _outline_points())
+    if zones:
+        head = [(0, 0), (WIDTH, 0), (WIDTH, FILL_LINE_Y_MM), (0, FILL_LINE_Y_MM)]
+        _zone(board, nets["GND"], pcbnew.F_Cu, head)
+        _zone(board, nets["GND"], pcbnew.B_Cu, _outline_points())
 
     _polyline(board, pcbnew.F_SilkS, [(0.8, FILL_LINE_Y_MM), (WIDTH - 0.8, FILL_LINE_Y_MM)],
               closed=False, width=0.3)
     _text(board, "SOIL LINE", WIDTH / 2, FILL_LINE_Y_MM - 1.4, 1.0)
     _text(board, "+", 19.5, 35.7, 2.0)
     _text(board, "-", 19.5, 118.3, 2.0)
-    _text(board, "18650", 12.5, 60.0, 2.5, angle=90)
-    _text(board, "SOIL SENSOR v1", 12.5, 100.0, 1.5, angle=90)
+    _text(board, "SOIL SENSOR v1", 21.3, 168.0, 1.2, angle=90)
     _text(board, "JLCJLCJLCJLC", 5.5, 137.0, 0.8)
     _text(board, "BOOT", 1.6, 17.2, 0.6)
 
     pcbnew.SaveBoard(path, board)
-    fill_zones(path)
+    if zones:
+        fill_zones(path)
 
 
 def fill_zones(path):
@@ -246,5 +275,6 @@ def fill_zones(path):
 
 
 if __name__ == "__main__":
-    build(os.path.abspath(sys.argv[1] if len(sys.argv) > 1
-                          else os.path.join(HERE, "soil_sensor.kicad_pcb")))
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    build(os.path.abspath(args[0] if args else os.path.join(HERE, "soil_sensor.kicad_pcb")),
+          zones="--no-zones" not in sys.argv)
