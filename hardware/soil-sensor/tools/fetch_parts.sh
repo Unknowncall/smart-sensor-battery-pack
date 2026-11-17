@@ -30,3 +30,6 @@ if [ ! -f "$FR" ]; then
   curl -sL -o "$FR" https://github.com/freerouting/freerouting/releases/download/v2.5.0/freerouting-2.5.0.jar
 fi
 echo "f6f51bb02245e8e717f9359bd260cc9c5c0b1bc0acc8b7cb2cd5b8ffeb5de3c7  $FR" | shasum -a 256 -c -
+
+# EasyEDA exports the holder's locating peg as a plated hole with no ring; it is non-plated.
+sed -i '' 's/(pad "" thru_hole circle (at 8.00 -35.84)/(pad "" np_thru_hole circle (at 8.00 -35.84)/' "$OUT.pretty/BH-18650-B1BA002.kicad_mod"
