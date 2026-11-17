@@ -27,7 +27,8 @@ Generated with kicad-cli 10.0.8 from `smart_sensor_battery.kicad_pcb`. DRC: 0 vi
 - Economic PCBA is greyed out when the surface finish is OSP (the quote page
   default in Nov 2026). Pick HASL or LeadFree HASL first.
 - Quote on 2026-11-16: 5 boards, black, LeadFree HASL, Economic PCBA top side,
-  Confirm Parts Placement on = $74.00 before shipping.
+  Confirm Parts Placement on = $70.84 before shipping (after moving R7 to
+  Basic part C25741; Extended-part fees are $3.09 each, 9 parts = $27.81).
 
 ## Before you pay
 Check every part's rotation and pin 1 in JLC's placement preview. KiCad and JLC
